@@ -1,5 +1,5 @@
 import random
-import pygame
+import game.draw as draw
 
 
 class Particle:
@@ -18,6 +18,6 @@ class Particle:
         self.vy  += 0.3
         self.life -= 1
 
-    def draw(self, surface: pygame.Surface) -> None:
-        size = max(1, int(5 * self.life / self.max_life))
-        pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), size)
+    def draw(self, surface) -> None:
+        size = max(0.5, 5 * self.life / self.max_life)
+        draw.circle(surface, self.color, (self.x, self.y), size)

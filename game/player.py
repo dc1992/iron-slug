@@ -4,6 +4,7 @@ from .settings import GRAVITY, JUMP_FORCE, GROUND_Y, NATIVE_W, RED, GREEN
 from .bullet import Bullet
 from .sprites import draw_player
 from .weapon import WEAPONS
+import game.draw as draw
 
 
 class Player:
@@ -111,16 +112,16 @@ class Player:
         self.invincible = 90
         return True
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface) -> None:
         draw_player(surface, int(self.x), int(self.y),
                     self.facing, self.anim_frame, self.invincible)
         self._draw_health_bar(surface)
 
-    def _draw_health_bar(self, surface: pygame.Surface) -> None:
+    def _draw_health_bar(self, surface) -> None:
         bw = 40
-        bx, by = int(self.x) - 5, int(self.y) - 10
-        pygame.draw.rect(surface, RED,   (bx, by, bw, 5))
-        pygame.draw.rect(surface, GREEN, (bx, by, int(bw * self.health / 100), 5))
+        bx, by = self.x - 5, self.y - 10
+        draw.rect(surface, RED,   (bx, by, bw, 5))
+        draw.rect(surface, GREEN, (bx, by, bw * self.health / 100, 5))
 
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.x), int(self.y), self.W, self.H)

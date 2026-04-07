@@ -1,4 +1,5 @@
 import pygame
+import game.draw as draw
 from .settings import YELLOW, NATIVE_W, NATIVE_H
 
 
@@ -10,7 +11,7 @@ class Bullet:
         owner: str,
         damage: int = 10,
         color: tuple = YELLOW,
-        max_range: int = 0,     # 0 = unlimited
+        max_range: int = 0,
     ) -> None:
         self.x         = x
         self.y         = y
@@ -18,7 +19,7 @@ class Bullet:
         self._start_x  = x
         self.vx        = vx
         self.vy        = vy
-        self.owner     = owner   # 'player' | 'enemy'
+        self.owner     = owner
         self.damage    = damage
         self.color     = color
         self.max_range = max_range
@@ -33,13 +34,11 @@ class Bullet:
         if not (-20 < self.x < NATIVE_W + 20 and -20 < self.y < NATIVE_H + 20):
             self.alive = False
 
-    def draw(self, surface: pygame.Surface) -> None:
-        # flamethrower bullets are slightly larger
+    def draw(self, surface) -> None:
         w = self.W + 4 if self.max_range > 0 else self.W
-        pygame.draw.ellipse(surface, self.color, (int(self.x), int(self.y), w, self.H + 2))
+        draw.ellipse(surface, self.color, (self.x, self.y, w, self.H + 2))
 
     def rect(self) -> pygame.Rect:
-        """Swept rect: covers prev→current path plus one extra step back."""
         extra = abs(self.vx)
         if self.vx >= 0:
             x1 = int(self._prev_x - extra)

@@ -2,7 +2,8 @@ import sys
 import random
 import pygame
 
-from game.settings   import NATIVE_W, NATIVE_H, DISPLAY_W, DISPLAY_H, FPS, ORANGE, RED, YELLOW, MELEE_RANGE
+from game.settings   import NATIVE_W, NATIVE_H, DISPLAY_W, DISPLAY_H, FPS, ORANGE, RED, YELLOW, MELEE_RANGE, BLACK
+import game.draw as draw
 from game.background import draw_bg
 from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner
 from game.player     import Player
@@ -18,18 +19,22 @@ def spawn_side() -> float:
 
 def run_game() -> None:
     pygame.init()
-    screen     = pygame.display.set_mode((DISPLAY_W, DISPLAY_H))
-    game_surf  = pygame.Surface((NATIVE_W, NATIVE_H))   # fixed logical canvas
+    screen = pygame.display.set_mode((DISPLAY_W, DISPLAY_H))
     pygame.display.set_caption("Metal Slug - Simple")
     clock = pygame.time.Clock()
-    init_fonts()
 
-    # letterbox: scale native canvas to fit display keeping aspect ratio
-    scale     = min(DISPLAY_W / NATIVE_W, DISPLAY_H / NATIVE_H)
-    scaled_w  = int(NATIVE_W * scale)
-    scaled_h  = int(NATIVE_H * scale)
-    blit_x    = (DISPLAY_W - scaled_w) // 2
-    blit_y    = (DISPLAY_H - scaled_h) // 2
+    # letterbox: compute scale to fit NATIVE canvas inside DISPLAY keeping aspect ratio
+    scale    = min(DISPLAY_W / NATIVE_W, DISPLAY_H / NATIVE_H)
+    scaled_w = int(NATIVE_W * scale)
+    scaled_h = int(NATIVE_H * scale)
+    blit_x   = (DISPLAY_W - scaled_w) // 2
+    blit_y   = (DISPLAY_H - scaled_h) // 2
+
+    # game_surf is at display resolution — no further scaling needed (always crisp)
+    game_surf = pygame.Surface((scaled_w, scaled_h))
+
+    draw.setup(scale)    # all draw.* calls use this scale
+    init_fonts(scale)    # fonts sized proportionally
 
     player    = Player()
     enemies:   list[Enemy]    = []
@@ -224,9 +229,9 @@ def run_game() -> None:
         if game_over:
             draw_game_over(game_surf, score)
 
-        # scale logical canvas → display window (with letterbox bars)
-        screen.fill((0, 0, 0))
-        screen.blit(pygame.transform.scale(game_surf, (scaled_w, scaled_h)), (blit_x, blit_y))
+        # blit game surface onto display with letterbox bars
+        screen.fill(BLACK)
+        screen.blit(game_surf, (blit_x, blit_y))
         pygame.display.flip()
 
 

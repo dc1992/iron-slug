@@ -4,6 +4,7 @@ import pygame
 from .settings import GRAVITY, GROUND_Y, NATIVE_W, ORANGE, YELLOW, MELEE_RANGE
 from .bullet import Bullet
 from .sprites import draw_enemy
+import game.draw as draw
 
 
 class Enemy:
@@ -101,25 +102,24 @@ class Enemy:
         draw_enemy(surface, int(self.x), int(self.y), self.facing)
         self._draw_health_bar(surface)
 
-    def _draw_explosion(self, surface: pygame.Surface) -> None:
+    def _draw_explosion(self, surface) -> None:
         if self.death_timer >= 25:
             return
         r = self.death_timer * 1.8
         for i in range(6):
             a  = math.radians(i * 60 + self.death_timer * 18)
-            ex = int(self.x + self.W / 2 + math.cos(a) * r)
-            ey = int(self.y + self.H / 2 + math.sin(a) * r)
-            s  = max(1, 7 - self.death_timer // 4)
-            pygame.draw.circle(surface, ORANGE, (ex, ey), s)
-        rs = max(1, 18 - self.death_timer)
-        pygame.draw.circle(surface, YELLOW,
-                           (int(self.x + self.W / 2), int(self.y + self.H / 2)), rs)
+            ex = self.x + self.W / 2 + math.cos(a) * r
+            ey = self.y + self.H / 2 + math.sin(a) * r
+            draw.circle(surface, ORANGE, (ex, ey), max(1, 7 - self.death_timer // 4))
+        draw.circle(surface, YELLOW,
+                    (self.x + self.W / 2, self.y + self.H / 2),
+                    max(1, 18 - self.death_timer))
 
-    def _draw_health_bar(self, surface: pygame.Surface) -> None:
+    def _draw_health_bar(self, surface) -> None:
         bw = 30
-        bx, by = int(self.x), int(self.y) - 8
-        pygame.draw.rect(surface, (100,   0, 0), (bx, by, bw, 4))
-        pygame.draw.rect(surface, (255, 100, 0), (bx, by, int(bw * self.hp / self.MAX_HP), 4))
+        bx, by = self.x, self.y - 8
+        draw.rect(surface, (100,   0, 0), (bx, by, bw, 4))
+        draw.rect(surface, (255, 100, 0), (bx, by, bw * self.hp / self.MAX_HP, 4))
 
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
