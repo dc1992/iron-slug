@@ -20,7 +20,7 @@ def spawn_side() -> float:
 def run_game() -> None:
     pygame.init()
     screen = pygame.display.set_mode((DISPLAY_W, DISPLAY_H))
-    pygame.display.set_caption("Metal Slug - Simple")
+    pygame.display.set_caption("Iron Slug")
     clock = pygame.time.Clock()
 
     # letterbox: compute scale to fit NATIVE canvas inside DISPLAY keeping aspect ratio
