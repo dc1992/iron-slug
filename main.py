@@ -3,7 +3,8 @@ import random
 import pygame
 
 from game.settings   import NATIVE_W, NATIVE_H, DISPLAY_W, DISPLAY_H, FPS, ORANGE, RED, YELLOW, MELEE_RANGE, BLACK
-import game.draw as draw
+import game.draw  as draw
+import game.audio as audio
 from game.background import draw_bg
 from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner, draw_cycle_banner
 from game.player     import Player
@@ -18,6 +19,7 @@ def spawn_side() -> float:
 
 
 def run_game() -> None:
+    pygame.mixer.pre_init(44100, -16, 2, 512)
     pygame.init()
     screen = pygame.display.set_mode((DISPLAY_W, DISPLAY_H))
     pygame.display.set_caption("Iron Slug")
@@ -35,6 +37,8 @@ def run_game() -> None:
 
     draw.setup(scale)    # all draw.* calls use this scale
     init_fonts(scale)    # fonts sized proportionally
+    audio.init()
+    audio.play_music()
 
     player    = Player()
     enemies:   list[Enemy]    = []
@@ -131,6 +135,7 @@ def run_game() -> None:
 
                 if in_melee:
                     if player.try_melee():
+                        audio.play_slash()
                         nearest.hit(40)
                         slashes.append(Slash(player_cx + player.facing * 25,
                                             player.y + 25, player.facing))
@@ -140,8 +145,10 @@ def run_game() -> None:
                         if nearest.dead:
                             score += 100 * wave
                 else:
+                    _weapon_fired = player.weapon
                     new_bullets = player.try_shoot()
                     if new_bullets:
+                        audio.play_shoot(_weapon_fired)
                         bullets.extend(new_bullets)
                         mx = (player.x + player.W) if player.facing == 1 else player.x
                         b_color = new_bullets[0].color
