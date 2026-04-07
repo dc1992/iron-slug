@@ -113,6 +113,22 @@ def _build_music() -> pygame.mixer.Sound:
 
 # ── SFX ───────────────────────────────────────────────────────────────────────
 
+def _build_dash() -> pygame.mixer.Sound:
+    """Short air-whoosh for the dash."""
+    n   = int(0.12 * _SR)
+    t   = np.linspace(0, 0.12, n, False)
+    rng = np.random.default_rng(9)
+
+    # Filtered noise sweep: bright at start, fades quickly
+    noise  = rng.uniform(-1, 1, n) * np.exp(-t * 22) * 0.55
+    tone   = np.sin(2 * np.pi * (600 + 400 * (1 - t / 0.12)) * t) * np.exp(-t * 20) * 0.30
+    wave   = (noise + tone) * 0.80
+
+    fade = min(int(0.002 * _SR), n)
+    wave[:fade] *= np.linspace(0, 1, fade)
+    return _to_sound(wave)
+
+
 def _build_slash() -> pygame.mixer.Sound:
     """Sharp metallic swoosh — knife slash."""
     n   = int(0.15 * _SR)
@@ -174,6 +190,7 @@ def init() -> None:
     _sounds['ak47']         = _build_shoot('ak47')
     _sounds['flamethrower'] = _build_shoot('flamethrower')
     _sounds['slash']        = _build_slash()
+    _sounds['dash']         = _build_dash()
     _sounds['music'].set_volume(0.35)
 
 
@@ -192,3 +209,8 @@ def play_shoot(weapon: str) -> None:
 def play_slash() -> None:
     """Play the knife slash sound."""
     _sounds['slash'].play()
+
+
+def play_dash() -> None:
+    """Play the dash whoosh sound."""
+    _sounds['dash'].play()

@@ -120,7 +120,10 @@ def run_game() -> None:
 
         # ── UPDATE ────────────────────────────────────────────────────────────
         if not game_over:
+            _was_dashing = player.dash_timer > 0
             player.update(pressed)
+            if player.dash_timer > 0 and not _was_dashing:
+                audio.play_dash()
 
             # ── player attack ─────────────────────────────────────────────────
             if pressed[pygame.K_LSHIFT] or pressed[pygame.K_RSHIFT]:
@@ -198,8 +201,9 @@ def run_game() -> None:
                             break
                 else:
                     if b.rect().colliderect(player.rect()):
-                        for _ in range(5):
-                            particles.append(Particle(b.x, b.y, RED))
+                        if player.invincible == 0:
+                            for _ in range(5):
+                                particles.append(Particle(b.x, b.y, RED))
                         b.alive = False
                         _player_hit(b.damage)
 

@@ -7,6 +7,11 @@ from .weapon import WEAPONS
 import game.draw as draw
 
 
+DASH_SPEED    = 14   # px/frame during dash
+DASH_DURATION = 10   # frames the dash lasts
+DASH_CD       = 60   # frames cooldown (1 s at 60 FPS)
+
+
 class Player:
     W, H = 30, 50
 
@@ -28,6 +33,8 @@ class Player:
         self.moving     = False
         self.weapon     = 'pistol'
         self.ammo       = -1          # -1 = unlimited
+        self.dash_timer = 0           # frames remaining in current dash
+        self.dash_cd    = 0           # frames until dash is available again
 
     def equip(self, weapon_name: str) -> None:
         self.weapon   = weapon_name
@@ -35,13 +42,30 @@ class Player:
         self.shoot_cd = 0             # ready to fire immediately
 
     def update(self, keys: pygame.key.ScancodeWrapper) -> None:
-        self.vx     = 0.0
         self.moving = False
 
-        if keys[pygame.K_LEFT]  or keys[pygame.K_a]:
-            self.vx = -5; self.facing = -1; self.moving = True
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.vx =  5; self.facing =  1; self.moving = True
+        # ── dash trigger ──────────────────────────────────────────────────────
+        if self.dash_cd > 0:
+            self.dash_cd -= 1
+
+        ctrl = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
+        if ctrl and self.dash_cd == 0 and self.dash_timer == 0:
+            self.dash_timer = DASH_DURATION
+            self.dash_cd    = DASH_CD
+
+        # ── movement ──────────────────────────────────────────────────────────
+        if self.dash_timer > 0:
+            self.vx          = DASH_SPEED * self.facing
+            self.invincible  = max(self.invincible, self.dash_timer)
+            self.dash_timer -= 1
+            self.moving         = True
+        else:
+            self.vx = 0.0
+            if keys[pygame.K_LEFT]  or keys[pygame.K_a]:
+                self.vx = -5; self.facing = -1; self.moving = True
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                self.vx =  5; self.facing =  1; self.moving = True
+
         if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]) and self.on_ground:
             self.vy        = JUMP_FORCE
             self.on_ground = False
@@ -58,7 +82,7 @@ class Player:
         self.x = max(0, min(NATIVE_W - self.W, self.x))
 
         if self.shoot_cd   > 0: self.shoot_cd   -= 1
-        if self.invincible > 0: self.invincible -= 1
+        if self.invincible > 0 and self.dash_timer == 0: self.invincible -= 1
 
         if self.moving and self.on_ground:
             self.anim_timer += 1
@@ -113,8 +137,9 @@ class Player:
         return True
 
     def draw(self, surface) -> None:
+        blink = 0 if self.dash_timer > 0 else self.invincible
         draw_player(surface, int(self.x), int(self.y),
-                    self.facing, self.anim_frame, self.invincible)
+                    self.facing, self.anim_frame, blink)
         self._draw_health_bar(surface)
 
     def _draw_health_bar(self, surface) -> None:
