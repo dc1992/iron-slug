@@ -5,7 +5,7 @@ import pygame
 from game.settings   import NATIVE_W, NATIVE_H, DISPLAY_W, DISPLAY_H, FPS, ORANGE, RED, YELLOW, MELEE_RANGE, BLACK
 import game.draw as draw
 from game.background import draw_bg
-from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner
+from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner, draw_cycle_banner
 from game.player     import Player
 from game.enemy      import Enemy
 from game.particle   import Particle
@@ -49,18 +49,40 @@ def run_game() -> None:
     to_spawn      = 5
     spawn_timer   = 0
     wave_banner   = 0
+    cycle_banner  = 0
     game_over     = False
 
-    # weapon pickup spawn: every 15-25 seconds (random interval)
-    pickup_timer    = random.randint(900, 1500)
-    MAX_PICKUPS     = 2
-    WEAPON_POOL     = ['ak47', 'flamethrower']
+    # weapon pickup spawn
+    pickup_timer = random.randint(900, 1500)
+    MAX_PICKUPS  = 2
+    WEAPON_POOL  = ['ak47', 'flamethrower']
+
+    # ── difficulty helpers ────────────────────────────────────────────────────
+    def current_cycle(w: int) -> int:
+        return (w - 1) // 3 + 1
+
+    def wave_in_cycle(w: int) -> int:
+        return (w - 1) % 3 + 1
 
     def wave_spawn_interval(w: int) -> int:
-        return max(30, 90 - (w - 1) * 8)
+        wic = wave_in_cycle(w)
+        return max(30, 90 - (wic - 1) * 8)       # resets every cycle
 
     def wave_enemy_count(w: int) -> int:
-        return min(5 + (w - 1) * 2, 20)
+        wic = wave_in_cycle(w)
+        return min(5 + (wic - 1) * 2, 12)        # resets every cycle
+
+    def enemy_speed(w: int) -> float:
+        c = current_cycle(w)
+        return round(1.8 + (c - 1) * 0.5, 2)     # +0.5 per cycle
+
+    def enemy_bullet_dmg(w: int) -> int:
+        c = current_cycle(w)
+        return 10 + (c - 1) * 6                  # +6 per cycle
+
+    def enemy_melee_dmg(w: int) -> int:
+        c = current_cycle(w)
+        return 25 + (c - 1) * 10                 # +10 per cycle
 
     def _player_hit(dmg: int) -> None:
         nonlocal lives, game_over
@@ -142,7 +164,7 @@ def run_game() -> None:
                     for _ in range(6):
                         particles.append(Particle(player.x + player.W / 2,
                                                   player.y + player.H / 2, RED))
-                    _player_hit(25)
+                    _player_hit(e.melee_damage)
                 else:
                     b = e.try_ranged()
                     if b:
@@ -197,17 +219,28 @@ def run_game() -> None:
 
             # ── wave management ───────────────────────────────────────────────
             if not live_enemies and to_spawn == 0:
+                prev_cycle   = current_cycle(wave)
                 wave        += 1
                 to_spawn     = wave_enemy_count(wave)
                 spawn_timer  = 0
                 wave_banner  = 50
+                if current_cycle(wave) > prev_cycle:
+                    cycle_banner = 90   # longer display for cycle-up
 
             if to_spawn > 0:
                 spawn_timer -= 1
                 if spawn_timer <= 0:
-                    enemies.append(Enemy(spawn_side()))
+                    enemies.append(Enemy(
+                        spawn_side(),
+                        speed        = enemy_speed(wave),
+                        bullet_damage= enemy_bullet_dmg(wave),
+                        melee_damage = enemy_melee_dmg(wave),
+                    ))
                     to_spawn    -= 1
                     spawn_timer  = wave_spawn_interval(wave)
+
+            if cycle_banner > 0:
+                cycle_banner -= 1
 
             if wave_banner > 0:
                 wave_banner -= 1
@@ -225,6 +258,7 @@ def run_game() -> None:
 
         draw_hud(game_surf, player, score, lives, wave, len(live_enemies) + to_spawn)
         draw_wave_banner(game_surf, wave, wave_banner)
+        draw_cycle_banner(game_surf, current_cycle(wave), cycle_banner)
 
         if game_over:
             draw_game_over(game_surf, score)

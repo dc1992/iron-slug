@@ -10,20 +10,25 @@ import game.draw as draw
 class Enemy:
     W, H   = 30, 45
     MAX_HP = 40
-    SPEED  = 1.8
 
-    def __init__(self, x: float) -> None:
-        self.x           = x
-        self.y           = float(GROUND_Y - self.H)
-        self.vy          = 0.0
-        self.on_ground   = False
-        self.hp          = self.MAX_HP
-        self.shoot_cd    = random.randint(60, 180)
-        self.facing      = 1
-        self.dead        = False
-        self.death_timer = 0
-        self.anim_frame  = 0
-        self.anim_timer  = 0
+    def __init__(self, x: float,
+                 speed: float = 1.8,
+                 bullet_damage: int = 10,
+                 melee_damage: int = 25) -> None:
+        self.x             = x
+        self.y             = float(GROUND_Y - self.H)
+        self.vy            = 0.0
+        self.on_ground     = False
+        self.hp            = self.MAX_HP
+        self.shoot_cd      = random.randint(60, 180)
+        self.facing        = 1
+        self.dead          = False
+        self.death_timer   = 0
+        self.anim_frame    = 0
+        self.anim_timer    = 0
+        self.speed         = speed
+        self.bullet_damage = bullet_damage
+        self.melee_damage  = melee_damage
 
     STOP_DIST   = 80   # min distance (px) from player center
     SPREAD_DIST = 40   # min distance (px) between enemies
@@ -39,9 +44,9 @@ class Enemy:
 
         if abs(dist) > self.STOP_DIST:
             if dist > 0:
-                self.x += self.SPEED; self.facing = 1
+                self.x += self.speed; self.facing = 1
             else:
-                self.x -= self.SPEED; self.facing = -1
+                self.x -= self.speed; self.facing = -1
 
         # push away from other enemies so they don't stack
         for other in others:
@@ -79,7 +84,7 @@ class Enemy:
         self.shoot_cd = 130
         bx = (self.x + self.W) if self.facing == 1 else (self.x - Bullet.W)
         by = self.y + 17
-        return Bullet(bx, by, self.facing * 7, 0, 'enemy')
+        return Bullet(bx, by, self.facing * 7, 0, 'enemy', damage=self.bullet_damage)
 
     def try_melee(self) -> bool:
         """Strike with knife when close. Returns True if attack fires."""

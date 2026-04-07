@@ -32,7 +32,7 @@ def draw_hud(surface, player, score: int, lives: int,
 
     # ── row 2: weapon + ammo (left) | HP bar (right) ─────────────────────────
     w_def    = WEAPONS[player.weapon]
-    ammo_str = '∞' if player.ammo == -1 else str(player.ammo)
+    ammo_str = 'inf.' if player.ammo == -1 else str(player.ammo)
     draw.blit(surface, _font_hud.render(f"{w_def['label']}  {ammo_str}", True, w_def['color']), (10, 27))
 
     hpx = NATIVE_W - 145
@@ -61,13 +61,20 @@ def draw_game_over(surface, score: int) -> None:
     surface.blit(t3, (cx - t3.get_width() // 2, draw.s(310)))
 
 
-def draw_wave_banner(surface, wave: int, timer: int) -> None:
-    if timer <= 0:
-        return
-    t  = _font_big.render(f"WAVE  {wave}", True, YELLOW)
+def _render_banner(surface, text: str, color: tuple, timer: int, cy_native: int) -> None:
+    t  = _font_big.render(text, True, color)
     s  = pygame.Surface((t.get_width(), t.get_height()), pygame.SRCALPHA)
     s.blit(t, (0, 0))
     s.set_alpha(min(255, timer * 8))
     cx = draw.s(NATIVE_W) // 2
-    cy = draw.s(NATIVE_H // 2 - 40)
-    surface.blit(s, (cx - t.get_width() // 2, cy))
+    surface.blit(s, (cx - t.get_width() // 2, draw.s(cy_native)))
+
+
+def draw_wave_banner(surface, wave: int, timer: int) -> None:
+    if timer > 0:
+        _render_banner(surface, f"WAVE  {wave}", YELLOW, timer, NATIVE_H // 2 - 40)
+
+
+def draw_cycle_banner(surface, cycle: int, timer: int) -> None:
+    if timer > 0:
+        _render_banner(surface, f"CYCLE {cycle} ^!", (255, 80, 0), timer, NATIVE_H // 2 + 10)
