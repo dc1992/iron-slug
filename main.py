@@ -72,16 +72,16 @@ def run_game() -> None:
     def wave_spawn_interval(w: int) -> int:
         c   = current_cycle(w)
         wic = wave_in_cycle(w)
-        return max(30, (90 + (c - 1) * 2) - (wic - 1) * 8)   # base +2 per cycle
+        return max(20, (75 - (c - 1) * 8) - (wic - 1) * 6)   # base -8 per cycle, floor 20
 
     def wave_enemy_count(w: int) -> int:
         c   = current_cycle(w)
         wic = wave_in_cycle(w)
-        return (5 + (c - 1)) + (wic - 1) * 2                    # base +1 per cycle, no cap
+        return (5 + (c - 1) * 2) + (wic - 1) * 2              # base +2 per cycle
 
     def enemy_speed(w: int) -> float:
         c = current_cycle(w)
-        return round(1.8 + (c - 1) * 0.5, 2)     # +0.5 per cycle
+        return round(2.0 + (c - 1) * 0.7, 2)     # +0.7 per cycle
 
     def enemy_bullet_dmg(w: int) -> int:
         c = current_cycle(w)
