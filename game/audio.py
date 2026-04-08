@@ -191,7 +191,9 @@ def init() -> None:
     _sounds['flamethrower'] = _build_shoot('flamethrower')
     _sounds['slash']        = _build_slash()
     _sounds['dash']         = _build_dash()
-    _sounds['music'].set_volume(0.35)
+    _sounds['music'].set_volume(0.105)
+    for key in ('pistol', 'ak47', 'flamethrower', 'slash', 'dash'):
+        _sounds[key].set_volume(0.30)
 
 
 def play_music() -> None:
