@@ -182,6 +182,33 @@ def _build_shoot(weapon: str) -> pygame.mixer.Sound:
 
 # ── public API ────────────────────────────────────────────────────────────────
 
+def _build_medkit() -> pygame.mixer.Sound:
+    """Soft three-note ascending chime."""
+    notes = [(523.25, 0.10), (659.25, 0.10), (783.99, 0.18)]  # C5 E5 G5
+    parts = []
+    for freq, dur in notes:
+        parts.append(_tone(freq, dur, 0.28, 'sine'))
+        parts.append(np.zeros(int(0.03 * _SR)))
+    wave = np.concatenate(parts)
+    fade = min(int(0.01 * _SR), len(wave))
+    wave[-fade:] *= np.linspace(1, 0, fade)
+    return _to_sound(wave)
+
+
+def _build_life() -> pygame.mixer.Sound:
+    """Celebratory ascending arpeggio."""
+    notes = [(523.25, 0.08), (659.25, 0.08), (783.99, 0.08),
+             (1046.5, 0.08), (1318.5, 0.20)]  # C5 E5 G5 C6 E6
+    parts = []
+    for freq, dur in notes:
+        parts.append(_tone(freq, dur, 0.30, 'sine'))
+        parts.append(np.zeros(int(0.02 * _SR)))
+    wave = np.concatenate(parts)
+    fade = min(int(0.015 * _SR), len(wave))
+    wave[-fade:] *= np.linspace(1, 0, fade)
+    return _to_sound(wave)
+
+
 def init() -> None:
     """Generate all sounds. Must be called after pygame.init()."""
     pygame.mixer.set_num_channels(16)
@@ -191,9 +218,13 @@ def init() -> None:
     _sounds['flamethrower'] = _build_shoot('flamethrower')
     _sounds['slash']        = _build_slash()
     _sounds['dash']         = _build_dash()
+    _sounds['medkit']       = _build_medkit()
+    _sounds['life']         = _build_life()
     _sounds['music'].set_volume(0.105)
     for key in ('pistol', 'ak47', 'flamethrower', 'slash', 'dash'):
         _sounds[key].set_volume(0.30)
+    for key in ('medkit', 'life'):
+        _sounds[key].set_volume(0.50)
 
 
 def play_music() -> None:
@@ -216,6 +247,14 @@ def play_slash() -> None:
 def play_dash() -> None:
     """Play the dash whoosh sound."""
     _sounds['dash'].play()
+
+
+def play_medkit() -> None:
+    _sounds['medkit'].play()
+
+
+def play_life() -> None:
+    _sounds['life'].play()
 
 
 def pause_music() -> None:

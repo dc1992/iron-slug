@@ -173,7 +173,14 @@ def run_game() -> None:
             for pk in pickups[:]:
                 pk.update()
                 if pk.rect().colliderect(player.rect()):
-                    player.equip(pk.weapon)
+                    if pk.kind == 'weapon':
+                        player.equip(pk.weapon)
+                    elif pk.kind == 'medkit':
+                        player.health = min(100, player.health + 30)
+                        audio.play_medkit()
+                    elif pk.kind == 'life':
+                        lives += 1
+                        audio.play_life()
                     pickups.remove(pk)
 
             # ── enemies ───────────────────────────────────────────────────────
@@ -237,7 +244,7 @@ def run_game() -> None:
                 if len(pickups) < MAX_PICKUPS:
                     wx     = random.randint(80, NATIVE_W - 80)
                     weapon = random.choice(WEAPON_POOL)
-                    pickups.append(Pickup(wx, weapon))
+                    pickups.append(Pickup(wx, 'weapon', weapon))
 
             # ── wave management ───────────────────────────────────────────────
             if not live_enemies and to_spawn == 0:
@@ -248,6 +255,9 @@ def run_game() -> None:
                 wave_banner  = 50
                 if current_cycle(wave) > prev_cycle:
                     cycle_banner = 90   # longer display for cycle-up
+                    pickups.append(Pickup(float(random.randint(80, NATIVE_W - 80)), 'medkit'))
+                    if prev_cycle % 2 == 0:
+                        pickups.append(Pickup(float(random.randint(80, NATIVE_W - 80)), 'life'))
 
             if to_spawn > 0:
                 spawn_timer -= 1
