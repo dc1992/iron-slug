@@ -6,7 +6,7 @@ from game.settings   import NATIVE_W, NATIVE_H, DISPLAY_W, DISPLAY_H, FPS, ORANG
 import game.draw  as draw
 import game.audio as audio
 from game.background import draw_bg
-from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner, draw_cycle_banner, draw_paused
+from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner, draw_paused
 from game.player     import Player
 from game.enemy      import Enemy
 from game.particle   import Particle
@@ -283,7 +283,6 @@ def run_game() -> None:
 
         draw_hud(game_surf, player, score, lives, wave, len(live_enemies) + to_spawn)
         draw_wave_banner(game_surf, wave, wave_banner)
-        draw_cycle_banner(game_surf, current_cycle(wave), cycle_banner)
 
         if paused:
             draw_paused(game_surf)

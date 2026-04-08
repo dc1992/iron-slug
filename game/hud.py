@@ -75,11 +75,6 @@ def draw_wave_banner(surface, wave: int, timer: int) -> None:
         _render_banner(surface, f"WAVE  {wave}", YELLOW, timer, NATIVE_H // 2 - 40)
 
 
-def draw_cycle_banner(surface, cycle: int, timer: int) -> None:
-    if timer > 0:
-        _render_banner(surface, f"CYCLE {cycle} ^!", (255, 80, 0), timer, NATIVE_H // 2 + 10)
-
-
 def draw_paused(surface) -> None:
     overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
     overlay.fill((0, 0, 0, 150))
