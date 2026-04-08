@@ -6,7 +6,7 @@ from game.settings   import NATIVE_W, NATIVE_H, DISPLAY_W, DISPLAY_H, FPS, ORANG
 import game.draw  as draw
 import game.audio as audio
 from game.background import draw_bg
-from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner, draw_cycle_banner
+from game.hud        import init_fonts, draw_hud, draw_game_over, draw_wave_banner, draw_cycle_banner, draw_paused
 from game.player     import Player
 from game.enemy      import Enemy
 from game.particle   import Particle
@@ -55,6 +55,7 @@ def run_game() -> None:
     wave_banner   = 0
     cycle_banner  = 0
     game_over     = False
+    paused        = False
 
     # weapon pickup spawn
     pickup_timer = random.randint(900, 1500)
@@ -69,12 +70,14 @@ def run_game() -> None:
         return (w - 1) % 3 + 1
 
     def wave_spawn_interval(w: int) -> int:
+        c   = current_cycle(w)
         wic = wave_in_cycle(w)
-        return max(30, 90 - (wic - 1) * 8)       # resets every cycle
+        return max(30, (90 + (c - 1) * 2) - (wic - 1) * 8)   # base +2 per cycle
 
     def wave_enemy_count(w: int) -> int:
+        c   = current_cycle(w)
         wic = wave_in_cycle(w)
-        return min(5 + (wic - 1) * 2, 12)        # resets every cycle
+        return (5 + (c - 1)) + (wic - 1) * 2                    # base +1 per cycle, no cap
 
     def enemy_speed(w: int) -> float:
         c = current_cycle(w)
@@ -109,6 +112,12 @@ def run_game() -> None:
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_ESCAPE:
                     pygame.quit(); sys.exit()
+                if ev.key == pygame.K_p and not game_over:
+                    paused = not paused
+                    if paused:
+                        audio.pause_music()
+                    else:
+                        audio.resume_music()
                 if game_over:
                     if ev.key == pygame.K_r:
                         run_game(); return
@@ -119,7 +128,7 @@ def run_game() -> None:
         live_enemies = [e for e in enemies if not e.dead]
 
         # ── UPDATE ────────────────────────────────────────────────────────────
-        if not game_over:
+        if not game_over and not paused:
             _was_dashing = player.dash_timer > 0
             player.update(pressed)
             if player.dash_timer > 0 and not _was_dashing:
@@ -270,6 +279,9 @@ def run_game() -> None:
         draw_hud(game_surf, player, score, lives, wave, len(live_enemies) + to_spawn)
         draw_wave_banner(game_surf, wave, wave_banner)
         draw_cycle_banner(game_surf, current_cycle(wave), cycle_banner)
+
+        if paused:
+            draw_paused(game_surf)
 
         if game_over:
             draw_game_over(game_surf, score)

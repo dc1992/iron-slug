@@ -41,7 +41,7 @@ def draw_hud(surface, player, score: int, lives: int,
     draw.rect(surface, GREEN, (hpx - 490, 30, player.health, 12))
 
     tip = _font_small.render(
-        "A/D or arrows keys: Move   W/Up Arrow/Space: Jump   K: Shoot   L: Dash   ESC: Quit",
+        "A/D or arrows keys: Move   W/Up Arrow/Space: Jump   K: Shoot   L: Dash   P: Pause   ESC: Quit",
         True, (180, 180, 180),
     )
     surface.blit(tip, (draw.s(NATIVE_W) // 2 - tip.get_width() // 2, draw.s(NATIVE_H) - tip.get_height() - 4))
@@ -78,3 +78,13 @@ def draw_wave_banner(surface, wave: int, timer: int) -> None:
 def draw_cycle_banner(surface, cycle: int, timer: int) -> None:
     if timer > 0:
         _render_banner(surface, f"CYCLE {cycle} ^!", (255, 80, 0), timer, NATIVE_H // 2 + 10)
+
+
+def draw_paused(surface) -> None:
+    overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 150))
+    surface.blit(overlay, (0, 0))
+    t = _font_big.render("PAUSED", True, WHITE)
+    cx = draw.s(NATIVE_W) // 2
+    cy = draw.s(NATIVE_H) // 2
+    surface.blit(t, (cx - t.get_width() // 2, cy - t.get_height() // 2))

@@ -214,3 +214,13 @@ def play_slash() -> None:
 def play_dash() -> None:
     """Play the dash whoosh sound."""
     _sounds['dash'].play()
+
+
+def pause_music() -> None:
+    if _music_ch:
+        _music_ch.pause()
+
+
+def resume_music() -> None:
+    if _music_ch:
+        _music_ch.unpause()
