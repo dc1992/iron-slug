@@ -137,13 +137,15 @@ def run_game() -> None:
             # ── player attack ─────────────────────────────────────────────────
             if pressed[pygame.K_k]:
                 player_cx = player.x + player.W / 2
+                player_cy = player.y + player.H / 2
                 nearest   = min(
                     (e for e in enemies if not e.dead),
                     key=lambda e: abs((e.x + e.W / 2) - player_cx),
                     default=None,
                 )
                 in_melee = (nearest is not None and
-                            abs((nearest.x + nearest.W / 2) - player_cx) <= MELEE_RANGE)
+                            abs((nearest.x + nearest.W / 2) - player_cx) <= MELEE_RANGE and
+                            abs((nearest.y + nearest.H / 2) - player_cy) <= MELEE_RANGE)
 
                 if in_melee:
                     if player.try_melee():
@@ -176,7 +178,7 @@ def run_game() -> None:
 
             # ── enemies ───────────────────────────────────────────────────────
             for e in enemies[:]:
-                e.update(player.x + player.W / 2, enemies)
+                e.update(player.x + player.W / 2, player.y + player.H / 2, enemies)
 
                 if e.try_melee():
                     slashes.append(Slash(e.x + e.W / 2, e.y + e.H / 3, -e.facing))

@@ -37,8 +37,9 @@ class Enemy:
     STOP_DIST   = 80   # min distance (px) from player center
     SPREAD_DIST = 40   # min distance (px) between enemies
 
-    def update(self, player_cx: float, others: list = []) -> None:
+    def update(self, player_cx: float, player_cy: float, others: list = []) -> None:
         self._player_cx = player_cx   # stored for try_ranged / try_melee
+        self._player_cy = player_cy
         if self.dead:
             self.death_timer += 1
             return
@@ -100,7 +101,10 @@ class Enemy:
 
     def try_melee(self) -> bool:
         """Strike with knife when close. Returns True if attack fires."""
-        if self.shoot_cd != 0 or self.dead or self.parachute or self._dist_to_player() > MELEE_RANGE:
+        my_cy = self.y + self.H / 2
+        if (self.shoot_cd != 0 or self.dead or self.parachute
+                or self._dist_to_player() > MELEE_RANGE
+                or abs(my_cy - self._player_cy) > MELEE_RANGE):
             return False
         self.shoot_cd = 70   # slightly faster rhythm than ranged
         return True
