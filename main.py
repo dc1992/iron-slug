@@ -126,7 +126,7 @@ def run_game() -> None:
                 audio.play_dash()
 
             # ── player attack ─────────────────────────────────────────────────
-            if pressed[pygame.K_LSHIFT] or pressed[pygame.K_RSHIFT]:
+            if pressed[pygame.K_k]:
                 player_cx = player.x + player.W / 2
                 nearest   = min(
                     (e for e in enemies if not e.dead),

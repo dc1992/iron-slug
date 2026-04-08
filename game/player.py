@@ -48,7 +48,7 @@ class Player:
         if self.dash_cd > 0:
             self.dash_cd -= 1
 
-        ctrl = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
+        ctrl = keys[pygame.K_l]
         if ctrl and self.dash_cd == 0 and self.dash_timer == 0:
             self.dash_timer = DASH_DURATION
             self.dash_cd    = DASH_CD

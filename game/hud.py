@@ -41,7 +41,7 @@ def draw_hud(surface, player, score: int, lives: int,
     draw.rect(surface, GREEN, (hpx - 490, 30, player.health, 12))
 
     tip = _font_small.render(
-        "A/D or ←/→: Move   W/↑/Space: Jump   Shift: Shoot   ESC: Quit",
+        "A/D or arrows keys: Move   W/Up Arrow/Space: Jump   K: Shoot   L: Dash   ESC: Quit",
         True, (180, 180, 180),
     )
     surface.blit(tip, (draw.s(NATIVE_W) // 2 - tip.get_width() // 2, draw.s(NATIVE_H) - tip.get_height() - 4))
