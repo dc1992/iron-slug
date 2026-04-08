@@ -31,7 +31,7 @@ WEAPONS: dict[str, dict] = {
         ammo      = 60,
         speed     = 6,
         color     = (255, 100,  20),
-        max_range = 120,
+        max_range = 240,
         spread    = 3,          # random vy ±3 per bullet
     ),
 }
