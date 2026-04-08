@@ -11,12 +11,15 @@ class Enemy:
     W, H   = 30, 45
     MAX_HP = 40
 
+    CHUTE_SPEED = 5.0   # px/frame while parachuting
+
     def __init__(self, x: float,
                  speed: float = 1.8,
                  bullet_damage: int = 10,
-                 melee_damage: int = 25) -> None:
+                 melee_damage: int = 25,
+                 parachute: bool = False) -> None:
         self.x             = x
-        self.y             = float(GROUND_Y - self.H)
+        self.y             = float(50 - self.H) if parachute else float(GROUND_Y - self.H)
         self.vy            = 0.0
         self.on_ground     = False
         self.hp            = self.MAX_HP
@@ -29,6 +32,7 @@ class Enemy:
         self.speed         = speed
         self.bullet_damage = bullet_damage
         self.melee_damage  = melee_damage
+        self.parachute     = parachute
 
     STOP_DIST   = 80   # min distance (px) from player center
     SPREAD_DIST = 40   # min distance (px) between enemies
@@ -57,12 +61,20 @@ class Enemy:
                 push = (self.SPREAD_DIST - abs(gap)) / 2
                 self.x += push if gap >= 0 else -push
 
-        self.vy += GRAVITY
-        self.y  += self.vy
-        if self.y + self.H >= GROUND_Y:
-            self.y         = GROUND_Y - self.H
-            self.vy        = 0
-            self.on_ground = True
+        if self.parachute:
+            self.y += self.CHUTE_SPEED
+            if self.y + self.H >= GROUND_Y:
+                self.y       = GROUND_Y - self.H
+                self.vy      = 0
+                self.on_ground = True
+                self.parachute = False
+        else:
+            self.vy += GRAVITY
+            self.y  += self.vy
+            if self.y + self.H >= GROUND_Y:
+                self.y         = GROUND_Y - self.H
+                self.vy        = 0
+                self.on_ground = True
 
         self.x = max(0, min(NATIVE_W - self.W, self.x))
 
@@ -79,7 +91,7 @@ class Enemy:
 
     def try_ranged(self) -> Bullet | None:
         """Shoot a bullet only when outside melee range."""
-        if self.shoot_cd != 0 or self.dead or self._dist_to_player() <= MELEE_RANGE:
+        if self.shoot_cd != 0 or self.dead or self.parachute or self._dist_to_player() <= MELEE_RANGE:
             return None
         self.shoot_cd = 130
         bx = (self.x + self.W) if self.facing == 1 else (self.x - Bullet.W)
@@ -88,7 +100,7 @@ class Enemy:
 
     def try_melee(self) -> bool:
         """Strike with knife when close. Returns True if attack fires."""
-        if self.shoot_cd != 0 or self.dead or self._dist_to_player() > MELEE_RANGE:
+        if self.shoot_cd != 0 or self.dead or self.parachute or self._dist_to_player() > MELEE_RANGE:
             return False
         self.shoot_cd = 70   # slightly faster rhythm than ranged
         return True
@@ -104,8 +116,20 @@ class Enemy:
             self._draw_explosion(surface)
             return
 
+        if self.parachute:
+            self._draw_parachute(surface)
         draw_enemy(surface, int(self.x), int(self.y), self.facing)
         self._draw_health_bar(surface)
+
+    def _draw_parachute(self, surface) -> None:
+        cx = self.x + self.W / 2
+        cy = self.y - 28
+        # canopy dome
+        draw.ellipse(surface, (220, 50, 50),  (cx - 24, cy - 14, 48, 28))
+        draw.ellipse(surface, (255, 120, 120), (cx - 24, cy - 14, 48, 14), 2)
+        # strings from canopy base to enemy shoulders
+        draw.line(surface, (210, 210, 210), (cx - 18, cy + 10), (self.x + 6,  self.y + 10), 1)
+        draw.line(surface, (210, 210, 210), (cx + 18, cy + 10), (self.x + 24, self.y + 10), 1)
 
     def _draw_explosion(self, surface) -> None:
         if self.death_timer >= 25:

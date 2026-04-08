@@ -250,11 +250,14 @@ def run_game() -> None:
             if to_spawn > 0:
                 spawn_timer -= 1
                 if spawn_timer <= 0:
+                    use_chute = random.random() < 0.35
+                    x = float(random.randint(20, NATIVE_W - 50)) if use_chute else spawn_side()
                     enemies.append(Enemy(
-                        spawn_side(),
+                        x,
                         speed        = enemy_speed(wave),
                         bullet_damage= enemy_bullet_dmg(wave),
                         melee_damage = enemy_melee_dmg(wave),
+                        parachute    = use_chute,
                     ))
                     to_spawn    -= 1
                     spawn_timer  = wave_spawn_interval(wave)
